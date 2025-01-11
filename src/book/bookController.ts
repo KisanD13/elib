@@ -152,18 +152,20 @@ const updateBookApi = async (
     );
 
     try {
-      if (filePath && fs.existsSync(filePath))
+      if (filePath && fs.existsSync(filePath)) {
         await fs.promises.unlink(filePath);
+      }
 
-      if (bookFilePath && fs.existsSync(bookFilePath))
+      if (bookFilePath && fs.existsSync(bookFilePath)) {
         await fs.promises.unlink(bookFilePath);
+      }
     } catch (error) {
       return next(createHttpError(500, "Error while deleting temp file"));
     }
 
     res.json(updateBook);
   } catch (error) {
-    console.log(error);
+    return next(createHttpError(500, "Error while updating the book"));
   }
 };
 
