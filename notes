@@ -1,0 +1,12 @@
+//http methods: GET, POST, PUT, these handler has three parameters,:-> req, res and next
+
+//global error handler and this has 4 parameter
+//for the types of err, we have installed http-errors
+
+//   throw new Error("something went wrong"); // this is JS format
+//   but we can use http-errors package
+//   const error = createHttpError(400, "something went wrong");
+//   throw error;
+//-------------------------------------------------------------------------
+
+//
