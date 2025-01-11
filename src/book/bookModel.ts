@@ -7,8 +7,13 @@ const bookSchema = new mongoose.Schema<Book>(
       type: String,
       required: true,
     },
+    description: {
+      type: String,
+      required: true,
+    },
     author: {
       type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
       required: true,
     },
     coverImage: {
@@ -23,14 +28,6 @@ const bookSchema = new mongoose.Schema<Book>(
       type: String,
       required: true,
     },
-    // createAt: {
-    //   type: Date,
-    //   required: true,
-    // },
-    // updatedAt: {
-    //   type: Date,
-    //   required: true,
-    // },
   },
   {timestamps: true},
 );
