@@ -1,10 +1,11 @@
 import express from "express";
-import createHttpError, {HttpError} from "http-errors";
+import cors from "cors";
 import globalErrorHandler from "./middlewares/globalErrorHandlers";
 import userRouter from "./user/userRouter";
 import {bookRouter} from "./book/bookRouter";
 
 const app = express();
+app.use(cors());
 app.use(express.json());
 
 app.get("/", (req, res, next) => {
