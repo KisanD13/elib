@@ -11,7 +11,6 @@ const connectDB = async () => {
       //after first connect if connection gets faailed then we should use below
       console.log(`error in connecting to database due to ${err}`),
     );
-
     await mongoose.connect(config.dataBaseURL as string); //making sure specify the databaseUrl to be string
   } catch (error) {
     //this will log, if at the first time connection fails
