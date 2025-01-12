@@ -1,7 +1,13 @@
 PORT=5513
+
 MONGO_CONNECTION_STRING=mongodb://localhost:27017/elib
+
 NODE_ENV=development
+
 JWT_SECRET=fgnhmjhgnbfdscrgtehrytjukyeretyjtnhbg
+
 CLOUDINARY_CLOUD=dbcdbrov8
+
 CLOUDINARY_API_KEY=712878983241667
+
 CLOUDINARY_API_SECRET=A0c6OTYTV2f-GLgBArM1gbVW3GA
