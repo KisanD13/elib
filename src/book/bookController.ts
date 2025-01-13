@@ -8,7 +8,7 @@ import {AuthRequest} from "../middlewares/authenticate";
 
 //create new book method: POST
 const createBook = async (req: Request, res: Response, next: NextFunction) => {
-  const {title, genre} = req.body;
+  const {title, genre, description} = req.body;
 
   const files = req.files as {[fieldname: string]: Express.Multer.File[]};
 
@@ -29,6 +29,9 @@ const createBook = async (req: Request, res: Response, next: NextFunction) => {
     bookFileName,
   );
 
+  let coverImagePublicId: string | undefined;
+  let bookFilePublicId: string | undefined;
+
   try {
     const uploadresult = await cloudinary.uploader.upload(filePath, {
       filename_override: fileName,
@@ -46,11 +49,14 @@ const createBook = async (req: Request, res: Response, next: NextFunction) => {
       },
     );
 
-    const _req = req as AuthRequest;
+    coverImagePublicId = uploadresult.public_id;
+    bookFilePublicId = bookFileUploadResult.public_id;
 
+    const _req = req as AuthRequest;
     const newBook = await bookModel.create({
       title,
       genre,
+      description,
       author: _req.userId,
       coverImage: uploadresult.secure_url,
       file: bookFileUploadResult.secure_url,
@@ -67,6 +73,24 @@ const createBook = async (req: Request, res: Response, next: NextFunction) => {
 
     res.status(201).json({id: newBook._id});
   } catch (error) {
+    if (coverImagePublicId)
+      await cloudinary.uploader.destroy(coverImagePublicId);
+    if (bookFilePublicId)
+      await cloudinary.uploader.destroy(bookFilePublicId, {
+        resource_type: "raw",
+      });
+
+    try {
+      if (fs.existsSync(filePath)) {
+        await fs.promises.unlink(filePath);
+      }
+      if (fs.existsSync(bookFilePath)) {
+        await fs.promises.unlink(bookFilePath);
+      }
+    } catch (error) {
+      return next(createHttpError(500, "Error while deleting temp files"));
+    }
+
     return next(createHttpError(500, "Error while uploading the files"));
   }
 };
@@ -200,7 +224,7 @@ const getSingleBook = async (
   }
 };
 
-//get single book
+//delete single book
 const deleteBook = async (req: Request, res: Response, next: NextFunction) => {
   const bookId = req.params.bookId;
 
