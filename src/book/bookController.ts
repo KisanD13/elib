@@ -101,7 +101,7 @@ const updateBookApi = async (
   res: Response,
   next: NextFunction,
 ) => {
-  const {title, genre} = req.body;
+  const {title, genre, description} = req.body;
   const bookId = req.params.bookId;
   const files = req.files as {[fieldname: string]: Express.Multer.File[]};
 
@@ -115,11 +115,19 @@ const updateBookApi = async (
     return next(createHttpError(403, "User not authorised"));
   }
 
+  let coverImagePublicId: string | undefined;
+  let bookFilePublicId: string | undefined;
+
   try {
     let completeCoverImage = "";
     let filePath;
 
     if (files?.coverImage) {
+      if (book.coverImage) {
+        const publicId = book.coverImage.split("/").at(-1)?.split(".")[0];
+        await cloudinary.uploader.destroy(`book-covers/${publicId}`);
+      }
+
       const fileName = files?.coverImage[0].filename;
       const coverMimeType = files?.coverImage[0].mimetype.split("/").at(-1);
 
@@ -135,6 +143,7 @@ const updateBookApi = async (
         format: coverMimeType,
       });
 
+      coverImagePublicId = uploadResult.public_id;
       completeCoverImage = uploadResult.secure_url;
       try {
         await fs.promises.unlink(filePath);
@@ -148,6 +157,13 @@ const updateBookApi = async (
     let bookFilePath;
 
     if (files?.file) {
+      if (book.file) {
+        const publicId = book.file.split("/").at(-1);
+        await cloudinary.uploader.destroy(`book-pdfs/${publicId}`, {
+          resource_type: "raw",
+        });
+      }
+
       const bookFileName = files?.file[0].filename;
       bookFilePath = path.resolve(
         __dirname,
@@ -161,6 +177,7 @@ const updateBookApi = async (
         format: "pdf",
       });
 
+      bookFilePublicId = uploadResultPdf.public_id;
       completeFileName = uploadResultPdf.secure_url;
     }
 
@@ -171,6 +188,7 @@ const updateBookApi = async (
         genre,
         coverImage: completeCoverImage ? completeCoverImage : book.coverImage,
         file: completeFileName ? completeFileName : book.file,
+        description,
       },
       {new: true},
     );
@@ -189,6 +207,13 @@ const updateBookApi = async (
 
     res.json(updateBook);
   } catch (error) {
+    if (coverImagePublicId)
+      await cloudinary.uploader.destroy(coverImagePublicId);
+    if (bookFilePublicId)
+      await cloudinary.uploader.destroy(bookFilePublicId, {
+        resource_type: "raw",
+      });
+
     return next(createHttpError(500, "Error while updating the book"));
   }
 };
