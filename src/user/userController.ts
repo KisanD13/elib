@@ -20,8 +20,7 @@ const createUser = async (req: Request, res: Response, next: NextFunction) => {
     const user = await userModel.findOne({email});
 
     if (user) {
-      const error = createHttpError(400, "User already exist with this email");
-      return next(error);
+      return next(createHttpError(400, "User already exist with this email"));
     }
   } catch (error) {
     return next(createHttpError(500, "Error while getting user"));
